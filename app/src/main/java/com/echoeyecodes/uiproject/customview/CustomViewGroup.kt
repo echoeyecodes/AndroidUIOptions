@@ -13,10 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.echoeyecodes.uiproject.R
-import com.echoeyecodes.uiproject.utils.CustomViewGroupConfig
-import com.echoeyecodes.uiproject.utils.ViewObject
-import com.echoeyecodes.uiproject.utils.convertToDp
-import com.echoeyecodes.uiproject.utils.getScreenSize
+import com.echoeyecodes.uiproject.utils.*
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -24,7 +21,7 @@ import kotlin.math.sin
 
 class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
     ViewGroup(context, attributeSet) {
-    private val locations = ArrayList<ViewObject>()
+    private var locations = ArrayList<ViewObject>()
     private val screenDimensions = getScreenSize()
     private val screenWidth = screenDimensions.width
     private val screenHeight = screenDimensions.height
@@ -35,10 +32,18 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
     init {
         setWillNotDraw(false)
-        setConfig(CustomViewGroupConfig.Builder().setBounds((screenWidth*0.3f),screenHeight*0.4f,screenWidth*0.8f,screenHeight*0.8f).setCornerRadius(20f).setSpacing(70.convertToDp()).setCoordinates(screenWidth/2, screenHeight/2).build())
+        setConfig(
+            CustomViewGroupConfig.Builder().setBounds(
+                (screenWidth * 0.3f),
+                screenHeight * 0.4f,
+                screenWidth * 0.8f,
+                screenHeight * 0.8f
+            ).setCornerRadius(20f).setSpacing(70.convertToDp())
+                .setCoordinates(screenWidth / 2, screenHeight / 2).build()
+        )
     }
 
-    fun setConfig(config: CustomViewGroupConfig){
+    fun setConfig(config: CustomViewGroupConfig) {
         this.config = config
     }
 
@@ -73,12 +78,18 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        path.moveTo(0f,0f)
+        path.reset()
+        path.moveTo(0f, 0f)
         path.lineTo(screenWidth.toFloat(), 0f)
         path.lineTo(screenWidth.toFloat(), config.rectF.top)
         path.lineTo(config.rectF.right, config.rectF.top)
 
-        path.addRoundRect(config.rectF, config.cornerRadius,config.cornerRadius, Path.Direction.CCW)
+        path.addRoundRect(
+            config.rectF,
+            config.cornerRadius,
+            config.cornerRadius,
+            Path.Direction.CCW
+        )
 
         path.moveTo(screenWidth.toFloat(), config.rectF.top)
         path.lineTo(screenWidth.toFloat(), screenHeight.toFloat())
@@ -122,18 +133,9 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
     private fun updateViewScale(viewObject: ViewObject) {
         val textView = findViewById<TextView>(R.id.btn_text)
-
-        locations.forEach {
-            if (it.index == viewObject.index) {
-                val child = getChildAt(it.index)
-                activateView(child)
-
-                textView.text = it.index.toString()
-            } else {
-                val child = getChildAt(it.index)
-                deactivateView(child)
-            }
-        }
+        val child = getChildAt(viewObject.index)
+        activateView(child)
+        textView.text = viewObject.index.toString()
     }
 
     private fun resetViewScale() {
@@ -157,7 +159,7 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
     @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
 
-        measureChildren(0,0)
+        measureChildren(0, 0)
         val count = childCount
 
         //radius should not be less than view width/height
@@ -181,7 +183,7 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
                 angle -= child.layoutParams.width * 2
 
                 child.layout(_left, _top, _right, _bottom)
-                locations.add(ViewObject(i, _left, _top, childWidth, childHeight))
+                cacheLocation(ViewObject(i, _left, _top, childWidth, childHeight))
             } else if (child is TextView) {
 
                 val childWidth = child.measuredWidth
@@ -189,9 +191,9 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
                 //if we are touching left hand side, position text at right hand
                 //and vice versa
-                val _left = if(startCoordinates.first <= screenWidth/2){
+                val _left = if (startCoordinates.first <= screenWidth / 2) {
                     screenWidth - childWidth - 10.convertToDp()
-                }else{
+                } else {
                     10.convertToDp()
                 }
 
@@ -203,6 +205,16 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
             }
         }
 
+    }
+
+    private fun cacheLocation(viewObject: ViewObject) {
+        val index = locations.indexOfFirst { it.index == viewObject.index }
+        if (index == -1) {
+            locations.add(viewObject)
+        } else {
+            locations.removeAt(index)
+            locations.add(viewObject)
+        }
     }
 
     private fun getCircleCoordinates(valueX: Int, valueY: Int): Pair<Int, Int> {
@@ -218,10 +230,10 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
         if (blastRadiusX < xRadius) {
             blastRadiusX += (radius - blastRadiusX)
-        }else if (blastRadiusX > screenWidth /2 && (screenWidth - blastRadiusX) < xRadius) {
+        } else if (blastRadiusX > screenWidth / 2 && (screenWidth - blastRadiusX) < xRadius) {
             blastRadiusX -= ((xRadius) - (screenWidth - blastRadiusX))
         }
-        if(blastRadiusY > screenHeight && (screenHeight - blastRadiusY) < yRadius){
+        if (blastRadiusY > screenHeight && (screenHeight - blastRadiusY) < yRadius) {
             blastRadiusY -= yRadius - (blastRadiusY - (screenHeight - yRadius))
         }
 
