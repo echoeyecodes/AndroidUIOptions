@@ -18,6 +18,8 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import android.os.SystemClock
+
 
 class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
     ViewGroup(context, attributeSet) {
@@ -32,15 +34,15 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
     init {
         setWillNotDraw(false)
-        setConfig(
-            CustomViewGroupConfig.Builder().setBounds(
-                (screenWidth * 0.3f),
-                screenHeight * 0.4f,
-                screenWidth * 0.8f,
-                screenHeight * 0.8f
-            ).setCornerRadius(20f).setSpacing(70.convertToDp())
-                .setCoordinates(screenWidth / 2, screenHeight / 2).build()
-        )
+//        setConfig(
+//            CustomViewGroupConfig.Builder().setBounds(
+//                (screenWidth * 0.3f),
+//                screenHeight * 0.4f,
+//                screenWidth * 0.8f,
+//                screenHeight * 0.8f
+//            ).setCornerRadius(20f).setSpacing(70.convertToDp())
+//                .setCoordinates(screenWidth / 2, screenHeight / 2).build()
+//        )
     }
 
     fun setConfig(config: CustomViewGroupConfig) {
@@ -107,7 +109,7 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         val _y = event.y.toInt()
 
         when (event.action) {
-            MotionEvent.ACTION_MOVE -> {
+            MotionEvent.ACTION_MOVE , MotionEvent.ACTION_DOWN-> {
                 val location = locations.find {
                     isBetween(
                         _x,
@@ -238,5 +240,20 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         }
 
         return Pair(blastRadiusX, blastRadiusY)
+    }
+
+    fun focusView() {
+        val downTime = SystemClock.uptimeMillis()
+        val eventTime = SystemClock.uptimeMillis() + 100
+        val metaState = 0
+        val motionEvent = MotionEvent.obtain(
+            downTime,
+            eventTime,
+            MotionEvent.ACTION_MOVE,
+            config.rectF.left,
+            config.rectF.top,
+            metaState
+        )
+        dispatchTouchEvent(motionEvent)
     }
 }

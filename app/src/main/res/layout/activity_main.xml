@@ -1,54 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recycler_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    tools:context=".MainActivity">
-
-    <com.echoeyecodes.uiproject.customview.CustomViewGroup
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/btn_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/teal_700"
-            android:textSize="25sp"
-            android:textStyle="bold" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:stateListAnimator="@xml/scale_anim" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
-
-    </com.echoeyecodes.uiproject.customview.CustomViewGroup>
-
-</RelativeLayout>
+    tools:context=".MainActivity" />
