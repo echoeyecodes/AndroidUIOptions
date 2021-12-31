@@ -14,11 +14,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.echoeyecodes.uiproject.R
 import com.echoeyecodes.uiproject.utils.*
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sin
-import android.os.SystemClock
+import kotlin.math.*
 
 
 class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
@@ -75,6 +71,20 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         toY: Int
     ): Boolean {
         return ((valueX in fromX..toX) && (valueY in fromY..toY))
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+//        canvas.drawLine(0f, (screenHeight/2).toFloat(),screenWidth.toFloat(), (screenHeight/2).toFloat(), Paint().apply {
+//            color = Color.WHITE
+//        })
+//        canvas.drawLine(config.cx.toFloat(), config.cy.toFloat(), screenWidth.toFloat(), config.cy.toFloat(), Paint().apply {
+//            color = Color.WHITE
+//        })
+
+//        canvas.drawLine((screenWidth/2).toFloat(), 0f,(screenWidth/2).toFloat(), screenHeight.toFloat(), Paint().apply {
+//            color = Color.WHITE
+//        })
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -165,9 +175,11 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         val count = childCount
 
         //radius should not be less than view width/height
-        var angle = 0.0
+        var angle = -(Math.PI /2)
         val spacing = config.spacing
-        val startCoordinates = getCircleCoordinates(config.cx, config.cy)
+        val startCoordinates = Pair(config.cx, config.cy)
+        val step = (2*Math.PI)/8
+        val radius = 200
 
         for (i in 0 until count) {
             val child = getChildAt(i)
@@ -177,12 +189,12 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
                 setCircleColor(child, i)
 
-                val _left = startCoordinates.first + ((spacing * sin(angle)).toInt())
+                val _left = (startCoordinates.first + (radius * cos(angle)) - childWidth/2).toInt()
                 val _right = childWidth + _left
-                val _top = startCoordinates.second - (spacing * cos(angle)).toInt()
+                val _top = (startCoordinates.second + (radius * sin(angle)) - childHeight/2).toInt()
                 val _bottom = childHeight + _top
 
-                angle -= child.layoutParams.width * 2
+                angle+=step
 
                 child.layout(_left, _top, _right, _bottom)
                 cacheLocation(ViewObject(i, _left, _top, childWidth, childHeight))
@@ -223,12 +235,12 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         val radius = config.spacing
 
         val yRadius = radius * 3
-        val xRadius = radius * 2
+        val xRadius = radius
 
         var blastRadiusX = min(valueX, screenWidth)
 
         //start button at the top should be above thumb
-        var blastRadiusY = min(max(valueY - 50, 50), screenHeight)
+        var blastRadiusY = min(max(valueY - 100, 100), screenHeight)
 
         if (blastRadiusX < xRadius) {
             blastRadiusX += (radius - blastRadiusX)
@@ -239,21 +251,6 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
             blastRadiusY -= yRadius - (blastRadiusY - (screenHeight - yRadius))
         }
 
-        return Pair(blastRadiusX, blastRadiusY)
-    }
-
-    fun focusView() {
-        val downTime = SystemClock.uptimeMillis()
-        val eventTime = SystemClock.uptimeMillis() + 100
-        val metaState = 0
-        val motionEvent = MotionEvent.obtain(
-            downTime,
-            eventTime,
-            MotionEvent.ACTION_MOVE,
-            config.rectF.left,
-            config.rectF.top,
-            metaState
-        )
-        dispatchTouchEvent(motionEvent)
+        return Pair(valueX, valueY)
     }
 }

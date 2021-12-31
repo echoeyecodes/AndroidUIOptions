@@ -12,7 +12,7 @@ class CustomViewGroupConfig private constructor(val spacing: Int, val cx:Int, va
         private var cy = 0
         private var cornerRadius = 0f
         private var rectF:RectF = RectF()
-        private var shadowColor = Color.parseColor("#FF0000")
+        private var shadowColor = Color.parseColor("#000000")
 
         fun setSpacing(spacing:Int) = apply { this.spacing = spacing }
         fun setCoordinates(x:Int, y: Int) = apply {

@@ -15,6 +15,7 @@ import com.echoeyecodes.uiproject.fragments.CustomViewDialogFragment
 import com.echoeyecodes.uiproject.utils.AndroidUtilities
 import com.echoeyecodes.uiproject.utils.CustomViewGroupConfig
 import com.echoeyecodes.uiproject.utils.convertToDp
+import com.echoeyecodes.uiproject.utils.getRootViewOffset
 
 class MainActivity : AppCompatActivity(), DefaultAdapterCallback {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -44,8 +45,10 @@ class MainActivity : AppCompatActivity(), DefaultAdapterCallback {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onItemLongPress(view: View, point: Point) {
+        val yOffset = binding.root.getRootViewOffset()
+
         val config = CustomViewGroupConfig.Builder().setSpacing(70.convertToDp())
-            .setCoordinates(point.x, point.y).setBounds(
+            .setCoordinates(point.x, point.y - yOffset).setBounds(
                 view.left.toFloat(),
                 view.top.toFloat(),
                 view.right.toFloat(),

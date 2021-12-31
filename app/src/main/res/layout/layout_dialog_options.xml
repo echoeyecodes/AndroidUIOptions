@@ -36,14 +36,5 @@
             android:layout_height="@dimen/circle_size"
             android:stateListAnimator="@xml/scale_anim" />
 
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
-
-        <com.echoeyecodes.uiproject.customview.Circle
-            android:layout_width="@dimen/circle_size"
-            android:layout_height="@dimen/circle_size"
-            android:stateListAnimator="@xml/scale_anim" />
 
     </com.echoeyecodes.uiproject.customview.CustomViewGroup>
