@@ -11,8 +11,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.echoeyecodes.uiproject.R
+import com.echoeyecodes.uiproject.callbacks.CustomViewGroupCallback
 import com.echoeyecodes.uiproject.utils.*
 import kotlin.math.*
 
@@ -25,6 +24,7 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
     private val screenHeight = screenDimensions.height
     private val path = Path()
     private val paint = Paint()
+    private var customViewGroupCallback: CustomViewGroupCallback? = null
 
     private var config = CustomViewGroupConfig.Builder().build()
 
@@ -39,6 +39,10 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 //            ).setCornerRadius(20f).setSpacing(70.convertToDp())
 //                .setCoordinates(screenWidth / 2, screenHeight / 2).build()
 //        )
+    }
+
+    fun setCustomViewGroupCallback(callback: CustomViewGroupCallback) {
+        this.customViewGroupCallback = callback
     }
 
     fun setConfig(config: CustomViewGroupConfig) {
@@ -73,20 +77,6 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         return ((valueX in fromX..toX) && (valueY in fromY..toY))
     }
 
-    override fun dispatchDraw(canvas: Canvas) {
-        super.dispatchDraw(canvas)
-//        canvas.drawLine(0f, (screenHeight/2).toFloat(),screenWidth.toFloat(), (screenHeight/2).toFloat(), Paint().apply {
-//            color = Color.WHITE
-//        })
-//        canvas.drawLine(config.cx.toFloat(), config.cy.toFloat(), screenWidth.toFloat(), config.cy.toFloat(), Paint().apply {
-//            color = Color.WHITE
-//        })
-
-//        canvas.drawLine((screenWidth/2).toFloat(), 0f,(screenWidth/2).toFloat(), screenHeight.toFloat(), Paint().apply {
-//            color = Color.WHITE
-//        })
-    }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -115,49 +105,62 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        super.onTouchEvent(event)
         val _x = event.x.toInt()
         val _y = event.y.toInt()
 
-        when (event.action) {
-            MotionEvent.ACTION_MOVE , MotionEvent.ACTION_DOWN-> {
-                val location = locations.find {
-                    isBetween(
-                        _x,
-                        _y,
-                        it.x,
-                        it.x + it.width,
-                        it.y,
-                        it.y + it.height
-                    )
-                }
+        return when (event.action) {
+            MotionEvent.ACTION_MOVE -> {
+                val location = getViewLocation(_x, _y)
                 if (location != null) {
                     updateViewScale(location)
                 } else {
                     resetViewScale()
                 }
+                true
             }
             MotionEvent.ACTION_UP -> {
-                resetViewScale()
+                val location = getViewLocation(_x, _y)
+                touchReleased(location)
+                true
             }
+            else -> false
         }
-        return true
+    }
+
+    private fun getViewLocation(_x: Int, _y: Int): ViewObject? {
+        return locations.find {
+            isBetween(
+                _x,
+                _y,
+                it.x,
+                it.x + it.width,
+                it.y,
+                it.y + it.height
+            )
+        }
     }
 
     private fun updateViewScale(viewObject: ViewObject) {
-        val textView = findViewById<TextView>(R.id.btn_text)
         val child = getChildAt(viewObject.index)
         activateView(child)
-        textView.text = viewObject.index.toString()
+        customViewGroupCallback?.onItemFocused(viewObject.index)
     }
 
     private fun resetViewScale() {
-        val textView = findViewById<TextView>(R.id.btn_text)
-
         locations.forEach {
             val child = getChildAt(it.index)
             deactivateView(child)
-            textView.text = ""
+            customViewGroupCallback?.onInvalidLocationFocused()
         }
+    }
+
+    private fun touchReleased(location: ViewObject?) {
+        if(location != null){
+            customViewGroupCallback?.onItemSelected(location.index)
+        }
+        resetViewScale()
+        customViewGroupCallback?.onItemsUnFocused()
     }
 
     private fun activateView(view: View) {
@@ -175,48 +178,31 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
         val count = childCount
 
         //radius should not be less than view width/height
-        var angle = -(Math.PI /2)
-        val spacing = config.spacing
+        var angle = -(Math.PI / 2)
+        val radius = config.spacing.convertToDp()
         val startCoordinates = Pair(config.cx, config.cy)
-        val step = (2*Math.PI)/8
-        val radius = 200
+        val step = (2 * Math.PI) / 8
 
         for (i in 0 until count) {
-            val child = getChildAt(i)
-            if (child is Circle) {
-                val childWidth = child.layoutParams.width
-                val childHeight = child.layoutParams.height
+            val child = getChildAt(i) as Circle
+            val childWidth = child.layoutParams.width
+            val childHeight = child.layoutParams.height
 
-                setCircleColor(child, i)
+            setCircleColor(child, i)
 
-                val _left = (startCoordinates.first + (radius * cos(angle)) - childWidth/2).toInt()
-                val _right = childWidth + _left
-                val _top = (startCoordinates.second + (radius * sin(angle)) - childHeight/2).toInt()
-                val _bottom = childHeight + _top
+            val _left = (startCoordinates.first + (radius * cos(angle)) - childWidth / 2).toInt()
+            val _right = childWidth + _left
+            val _top = (startCoordinates.second + (radius * sin(angle)) - childHeight / 2).toInt()
+            val _bottom = childHeight + _top
 
-                angle+=step
-
-                child.layout(_left, _top, _right, _bottom)
-                cacheLocation(ViewObject(i, _left, _top, childWidth, childHeight))
-            } else if (child is TextView) {
-
-                val childWidth = child.measuredWidth
-                val childHeight = child.measuredHeight
-
-                //if we are touching left hand side, position text at right hand
-                //and vice versa
-                val _left = if (startCoordinates.first <= screenWidth / 2) {
-                    screenWidth - childWidth - 10.convertToDp()
-                } else {
-                    10.convertToDp()
-                }
-
-                val _right = childWidth + _left
-                val _top = 200
-                val _bottom = childHeight + _top
-
-                child.layout(_left, _top, _right, _bottom)
+            if ((screenWidth - startCoordinates.first) < radius) {
+                angle -= step
+            } else {
+                angle += step
             }
+
+            child.layout(_left, _top, _right, _bottom)
+            cacheLocation(ViewObject(i, _left, _top, childWidth, childHeight))
         }
 
     }
@@ -229,28 +215,5 @@ class CustomViewGroup(context: Context, attributeSet: AttributeSet) :
             locations.removeAt(index)
             locations.add(viewObject)
         }
-    }
-
-    private fun getCircleCoordinates(valueX: Int, valueY: Int): Pair<Int, Int> {
-        val radius = config.spacing
-
-        val yRadius = radius * 3
-        val xRadius = radius
-
-        var blastRadiusX = min(valueX, screenWidth)
-
-        //start button at the top should be above thumb
-        var blastRadiusY = min(max(valueY - 100, 100), screenHeight)
-
-        if (blastRadiusX < xRadius) {
-            blastRadiusX += (radius - blastRadiusX)
-        } else if (blastRadiusX > screenWidth / 2 && (screenWidth - blastRadiusX) < xRadius) {
-            blastRadiusX -= ((xRadius) - (screenWidth - blastRadiusX))
-        }
-        if (blastRadiusY > screenHeight && (screenHeight - blastRadiusY) < yRadius) {
-            blastRadiusY -= yRadius - (blastRadiusY - (screenHeight - yRadius))
-        }
-
-        return Pair(valueX, valueY)
     }
 }

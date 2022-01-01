@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.echoeyecodes.uiproject.customview.CustomViewGroup
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/btn_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/teal_700"
+            android:textColor="@color/white"
             android:textSize="25sp"
+            android:elevation="1dp"
+            android:layout_marginTop="200dp"
             android:textStyle="bold" />
+
+        <com.echoeyecodes.uiproject.customview.CustomViewGroup
+            android:id="@+id/custom_view_group"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         <com.echoeyecodes.uiproject.customview.Circle
             android:layout_width="@dimen/circle_size"
@@ -38,3 +41,4 @@
 
 
     </com.echoeyecodes.uiproject.customview.CustomViewGroup>
+</FrameLayout>

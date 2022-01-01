@@ -1,6 +1,7 @@
 package com.echoeyecodes.uiproject.adapters
 
 import android.graphics.Color
+import android.graphics.Point
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.echoeyecodes.uiproject.R
 import com.echoeyecodes.uiproject.callbacks.DefaultAdapterCallback
+import com.echoeyecodes.uiproject.callbacks.RVCustomViewCallback
 import com.echoeyecodes.uiproject.utils.DefaultItemCallback
 import com.echoeyecodes.uiproject.utils.setOnLongPressListener
 
@@ -35,9 +37,7 @@ class DefaultAdapter(private val callback:DefaultAdapterCallback) :
                 }
             )
 
-            view.setOnLongPressListener {
-                callback.onItemLongPress(view, it)
-            }
+            view.setOnLongPressListener(callback)
         }
     }
 }

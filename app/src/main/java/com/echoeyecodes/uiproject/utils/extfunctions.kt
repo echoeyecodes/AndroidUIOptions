@@ -6,6 +6,7 @@ import android.graphics.Point
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import com.echoeyecodes.uiproject.callbacks.RVCustomViewCallback
 
 fun Int.convertToDp(): Int {
     return TypedValue.applyDimension(
@@ -24,7 +25,7 @@ fun View.getRootViewOffset(): Int {
 }
 
 @SuppressLint("ClickableViewAccessibility")
-fun View.setOnLongPressListener(action: (Point) -> Unit) {
+fun View.setOnLongPressListener(callback:RVCustomViewCallback) {
     val coordinates = Point()
 
     val screenPosition = IntArray(2)
@@ -36,11 +37,13 @@ fun View.setOnLongPressListener(action: (Point) -> Unit) {
                 event.x.toInt() + screenPosition[0],
                 event.y.toInt() + screenPosition[1]
             )
+        }else if (event.action == MotionEvent.ACTION_UP){
+            callback.onRelease()
         }
-        false
+        v.onTouchEvent(event)
     }
     setOnLongClickListener {
-        action.invoke(coordinates)
+        callback.onLongPress(it, coordinates)
         true
     }
 }
